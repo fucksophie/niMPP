@@ -26,12 +26,6 @@ proc p*(packet: JsonNode, ws: Websocket) {.async.} =
 
       echo "Adding user " & packet{"name"}.getStr() & " to the DB. " & users.len.intToStr()
 
-      
       users.add(jsonTo(packet, User))
 
       echo "User added, now " & users.len.intToStr() & " users! "
-
-      await ws.send(serializeMPP(%*{
-        "m":"a",
-        "message": "Welcome " & packet{"name"}.getStr() & "!"
-      }))

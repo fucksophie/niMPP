@@ -18,15 +18,15 @@ proc main() {.async.} =
   asyncCheck tSender()
 
   while ws.readyState == Open:
-
-    await ws.send(serializeMPP(%*{
-      "m": "hi",
-      "token": readFile("token.txt")
-    }))
-
     let packet = parseJson(await ws.receiveStrPacket())[0]
     let id = packet{"m"}.getStr();
+
     case id:
+      of "b":
+        await ws.send(serializeMPP(%*{
+          "m": "hi",
+          "token": readFile("token.txt"),
+        }))
       of "hi":
         await hi(packet, ws)
       of "ch":
@@ -39,11 +39,6 @@ proc main() {.async.} =
         await a(packet, ws)
       of "bye":
           let db = filter(users, proc (u: User): bool = return u.id == packet{"p"}.getStr())[0]
-
-          await ws.send(serializeMPP(%*{
-            "m":"a",
-            "message": "Bye " & db.name & "!",
-          }))
 
           echo "Removing user " & packet{"p"}.getStr() & " from the DB. " & users.len.intToStr()
 
